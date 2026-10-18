@@ -7,7 +7,12 @@ import {
   Delete,
   Param,
   Body,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 import { CourseService } from './course.service.js';
 import { CreateCourseDto } from './dto/create-course.dto.js';
 import { UpdateCourseDto } from './dto/update-course.dto.js';
@@ -44,5 +49,29 @@ export class CourseController {
   @Delete(':id')
   deleteCourse(@Param('id') id: string) {
     return this.courseService.deleteCourse(id);
+  }
+
+  @Post(':id/upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './src/uploads',
+        filename: (req, file, cb) => {
+          cb(null, Date.now() + '-' + file.originalname);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        // allow only .jpg, .jpeg, .png and .pdf files
+        if (file.originalname.match(/\.(jpg|jpeg|png|pdf)$/i)) {
+          cb(null, true);
+        } else {
+          cb(new BadRequestException('Only .jpg, .jpeg, .png and .pdf files are allowed'), false);
+        }
+      },
+      limits: { fileSize: 2 * 1024 * 1024 },
+    }),
+  )
+  uploadCourseMaterial(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+    return this.courseService.uploadCourseMaterial(id, file);
   }
 }

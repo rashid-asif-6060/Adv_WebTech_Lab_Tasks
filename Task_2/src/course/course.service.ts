@@ -31,4 +31,13 @@ export class CourseService {
   deleteCourse(id: string) {
     return { message: 'Course deleted successfully', id: id };
   }
+
+  uploadCourseMaterial(id: string, file: Express.Multer.File) {
+    return {
+      message: 'Material uploaded successfully',
+      courseId: id,
+      filename: file.filename,
+      path: 'uploads/' + file.filename,
+    };
+  }
 }

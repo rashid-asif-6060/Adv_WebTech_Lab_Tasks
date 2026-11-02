@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { Products } from './entities/products.entity.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
+import { UpdateProductDto } from './dto/update-product.dto.js';
+import { PartialUpdateProductDto } from './dto/partial-update-product.dto.js';
 
 @Injectable()
 export class ProductsService {
@@ -32,6 +34,32 @@ export class ProductsService {
     const product = await this.productsRepo.findOne({ where: { id } });
     if (!product) throw new NotFoundException(`Product with id ${id} not found`);
     return { message: 'Product fetched successfully', data: product };
+  }
+
+  // PATCH - partial update
+  async update(id: number, dto: PartialUpdateProductDto) {
+    const product = await this.productsRepo.findOne({ where: { id } });
+    if (!product) throw new NotFoundException(`Product with id ${id} not found`);
+    await this.productsRepo.update(id, dto);
+    const updated = await this.productsRepo.findOne({ where: { id } });
+    return { message: 'Product updated successfully', data: updated };
+  }
+
+  // PUT - full replace
+  async replace(id: number, dto: UpdateProductDto) {
+    const product = await this.productsRepo.findOne({ where: { id } });
+    if (!product) throw new NotFoundException(`Product with id ${id} not found`);
+    Object.assign(product, dto);
+    await this.productsRepo.save(product);
+    const updated = await this.productsRepo.findOne({ where: { id } });
+    return { message: 'Product replaced successfully', data: updated };
+  }
+
+  async remove(id: number) {
+    const product = await this.productsRepo.findOne({ where: { id } });
+    if (!product) throw new NotFoundException(`Product with id ${id} not found`);
+    await this.productsRepo.delete(id);
+    return { message: 'Product deleted successfully', id };
   }
 
   async findByCategory(category: string) {

@@ -65,4 +65,9 @@ export class ProductsController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.productsService.remove(id);
   }
+
+  @Patch(':id/toggle')
+  toggleActive(@Param('id', ParseIntPipe) id: number) {
+    return this.productsService.toggleActive(id);
+  }
 }

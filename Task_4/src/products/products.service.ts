@@ -81,4 +81,12 @@ export class ProductsService {
       data,
     };
   }
+
+  async toggleActive(id: number) {
+    const product = await this.productsRepo.findOne({ where: { id } });
+    if (!product) throw new NotFoundException(`Product with id ${id} not found`);
+    product.isActive = !product.isActive;
+    await this.productsRepo.save(product);
+    return { message: 'Product status toggled successfully', data: product };
+  }
 }
